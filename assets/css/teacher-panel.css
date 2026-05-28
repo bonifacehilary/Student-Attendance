@@ -1,0 +1,8 @@
+/* EduAttend teacher panel — extends admin layout with sky accent */
+.teacher-shell .admin-sidebar__link.active {
+    background: #0284c7;
+}
+
+.teacher-shell .admin-stat__value.text-sky-600 {
+    color: #0284c7;
+}
