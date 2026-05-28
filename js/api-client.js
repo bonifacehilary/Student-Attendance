@@ -83,120 +83,6 @@ async function login(username, password) {
 function showNotification(message, type = 'info') {
     alert(message); // Simple fallback
 }
-        const endpoint = `products${queryString ? '?' + queryString : ''}`;
-        return await this.request(endpoint);
-    }
-
-    async getProduct(id) {
-        return await this.request(`products/${id}`);
-    }
-
-    async getFeaturedProducts(limit = 10) {
-        return await this.request(`products/featured?limit=${limit}`);
-    }
-
-    async searchProducts(query) {
-        return await this.request(`products/search?q=${encodeURIComponent(query)}`);
-    }
-
-    async createProduct(productData) {
-        return await this.request('products', {
-            method: 'POST',
-            body: productData
-        });
-    }
-
-    async updateProduct(id, productData) {
-        return await this.request(`products/${id}`, {
-            method: 'PUT',
-            body: productData
-        });
-    }
-
-    async deleteProduct(id) {
-        return await this.request(`products/${id}`, {
-            method: 'DELETE'
-        });
-    }
-
-    // Category methods
-    async getCategories() {
-        return await this.request('categories');
-    }
-
-    async getCategory(id) {
-        return await this.request(`categories/${id}`);
-    }
-
-    async createCategory(categoryData) {
-        return await this.request('categories', {
-            method: 'POST',
-            body: categoryData
-        });
-    }
-
-    // Cart methods
-    async getCart() {
-        return await this.request('cart');
-    }
-
-    async addToCart(productId, quantity = 1) {
-        return await this.request('cart/add', {
-            method: 'POST',
-            body: { product_id: productId, quantity }
-        });
-    }
-
-    async updateCartItem(itemId, quantity) {
-        return await this.request(`cart/${itemId}`, {
-            method: 'PUT',
-            body: { quantity }
-        });
-    }
-
-    async removeFromCart(itemId) {
-        return await this.request(`cart/${itemId}`, {
-            method: 'DELETE'
-        });
-    }
-
-    async clearCart() {
-        return await this.request('cart/clear', {
-            method: 'DELETE'
-        });
-    }
-
-    // Order methods
-    async getOrders() {
-        return await this.request('orders');
-    }
-
-    async getOrder(id) {
-        return await this.request(`orders/${id}`);
-    }
-
-    async createOrder(orderData) {
-        return await this.request('orders', {
-            method: 'POST',
-            body: orderData
-        });
-    }
-
-    async updateOrderStatus(id, status) {
-        return await this.request(`orders/${id}`, {
-            method: 'PUT',
-            body: { status }
-        });
-    }
-
-    // Utility methods
-    formatPrice(price) {
-        return `$${parseFloat(price).toFixed(2)}`;
-    }
-
-    formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString();
-    }
 
     showNotification(message, type = 'info') {
         // Simple notification system - can be enhanced with a proper notification library
@@ -215,7 +101,6 @@ function showNotification(message, type = 'info') {
         console.error('API Error:', error);
         this.showNotification(error.message || 'An error occurred', 'error');
     }
-}
 
 // Global API instance
 const api = new EduAttendAPI();
