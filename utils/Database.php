@@ -1,7 +1,7 @@
 <?php
-namespace Mpemba\Utils;
+namespace StudentAttendance\Utils;
 
-Use Mpemba\Utils\Utility;
+use StudentAttendance\Utils\Utility;
 
 class Database {
     

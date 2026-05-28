@@ -4,56 +4,23 @@
 
 require_once __DIR__ . '/../../config/bootstrap.php';
 
-session_start();
-
 // If already logged in, redirect to dashboard after brief delay
 // Otherwise redirect to login
 $redirectUrl = isset($_SESSION['student_id']) 
     ? '/pages/student/dashboard.php' 
     : '/pages/student/login.php';
+
+$pageTitle = 'Loading';
+$assetContext = 'student';
+$pageStyles = <<<'CSS'
+body, .brand-bg { background-color: #0f172a; }
+@keyframes custom-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.animate-emerald-spin { animation: custom-spin 1s linear infinite; }
+.fade-in { animation: fadeIn 0.8s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+CSS;
+require __DIR__ . '/../../components/ui/head.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>EduAttend - Loading</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
-        }
-
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-
-        @keyframes custom-spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .animate-emerald-spin {
-            animation: custom-spin 1s linear infinite;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .brand-bg {
-            background-color: #0f172a;
-        }
-    </style>
-</head>
 <body class="brand-bg flex items-center justify-center min-h-screen overflow-hidden antialiased">
     <!-- Splash Container -->
     <main class="flex flex-col items-center justify-between h-screen py-16 px-4">
@@ -120,5 +87,6 @@ $redirectUrl = isset($_SESSION['student_id'])
             window.location.href = '<?php echo $redirectUrl; ?>';
         }, 3500);
     </script>
+<?php require __DIR__ . '/../../components/ui/scripts.php'; ?>
 </body>
 </html>

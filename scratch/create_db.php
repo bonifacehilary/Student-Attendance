@@ -2,7 +2,7 @@
 $host = '127.0.0.1';
 $user = 'root';
 $pass = '';
-$dbName = 'ecommerce';
+$dbName = 'student_attendance';
 
 try {
     $pdo = new PDO("mysql:host=$host", $user, $pass);

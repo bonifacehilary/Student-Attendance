@@ -2,7 +2,7 @@
 // src/Migrations/Version20260528000000.php
 // Create notifications table
 
-namespace Mpemba\Crud\Migrations;
+namespace StudentAttendance\Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
@@ -37,6 +37,27 @@ final class Version20260528000000 extends AbstractMigration
         $table->addIndex(['student_id', 'created_at']);
         $table->addIndex(['is_read']);
         $table->addForeignKey(['student_id'], 'students', ['id'], ['onDelete' => 'CASCADE']);
+
+        $this->addSql("
+        
+            CREATE TABLE `notifications` (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                student_id INT NOT NULL,
+                type VARCHAR(50) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                message TEXT NOT NULL,
+                icon_type VARCHAR(50) DEFAULT 'info',
+                color_type VARCHAR(20) DEFAULT 'blue',
+                is_read BOOLEAN DEFAULT FALSE,
+                can_appeal BOOLEAN DEFAULT FALSE,
+                appeal_status VARCHAR(50),
+                action_url VARCHAR(255),
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_student_created (student_id, created_at),
+                INDEX idx_is_read (is_read),
+                FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
     }
 
     public function down(Schema $schema): void

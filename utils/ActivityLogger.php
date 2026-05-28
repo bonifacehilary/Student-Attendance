@@ -1,5 +1,5 @@
 <?php
-namespace Mpemba\Utils;
+namespace StudentAttendance\Utils;
 
 /**
  * ActivityLogger - Logs all user activities to the database

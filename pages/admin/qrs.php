@@ -1,106 +1,133 @@
 <?php
-// pages/admin/qrs.php
-// Admin: List and manage QR sessions
+// Admin — manage QR attendance sessions (pure PHP)
 
 require_once __DIR__ . '/../../config/bootstrap.php';
-require_once __DIR__ . '/../../utils/Utility.php';
 
-session_start();
+use StudentAttendance\Utils\AdminAuth;
 
-if (!isset($_SESSION['admin_id'])) {
-    // Allow access for development; in production require admin session
-}
+AdminAuth::require();
 
-// Handle actions: deactivate/delete
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    $id = intval($_POST['id'] ?? 0);
+    $id = (int) ($_POST['id'] ?? 0);
+    $flash = 'Action completed.';
 
     try {
         if ($action === 'deactivate' && $id) {
             Utility::safeQuery('UPDATE attendance_qr_sessions SET is_active = 0 WHERE id = ?', [$id], 'UPDATE');
-        }
-        if ($action === 'activate' && $id) {
+            $flash = 'Session deactivated.';
+        } elseif ($action === 'activate' && $id) {
             Utility::safeQuery('UPDATE attendance_qr_sessions SET is_active = 1 WHERE id = ?', [$id], 'UPDATE');
-        }
-        if ($action === 'delete' && $id) {
+            $flash = 'Session activated.';
+        } elseif ($action === 'delete' && $id) {
             Utility::safeQuery('DELETE FROM attendance_qr_sessions WHERE id = ?', [$id], 'DELETE');
+            $flash = 'Session deleted.';
+        } else {
+            $flash = 'Invalid action.';
         }
     } catch (\Throwable $e) {
-        error_log('QR sessions action error: ' . $e->getMessage());
+        error_log('QR sessions action: ' . $e->getMessage());
+        $flash = 'Action failed: ' . $e->getMessage();
     }
+
+    AdminAuth::redirect('/pages/admin/qrs.php', $flash);
 }
 
-// Fetch sessions
+$sessions = [];
 try {
-    $sessions = Utility::safeQuery('SELECT id, code, class_id, session_name, created_by, created_date, expires_at, is_active FROM attendance_qr_sessions ORDER BY created_date DESC', [], 'SELECT');
+    $sessions = Utility::safeQuery(
+        'SELECT id, code, class_id, session_name, created_by, created_date, expires_at, is_active
+         FROM attendance_qr_sessions ORDER BY created_date DESC',
+        [],
+        'SELECT'
+    );
 } catch (\Throwable $e) {
-    error_log('Fetch QR sessions error: ' . $e->getMessage());
-    $sessions = [];
+    error_log('Fetch QR sessions: ' . $e->getMessage());
 }
-?>
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Manage QR Sessions - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-gray-50">
-    <div class="max-w-5xl mx-auto p-6">
-        <div class="flex items-center justify-between mb-6">
-            <h1 class="text-2xl font-bold">QR Sessions</h1>
-            <a href="/pages/admin/create_qr.php" class="bg-green-700 text-white px-3 py-2 rounded">Create New</a>
-        </div>
 
-        <div class="bg-white rounded shadow overflow-hidden">
-            <table class="w-full text-left">
-                <thead class="bg-gray-100">
+$pageTitle = 'QR Sessions';
+$pageHeading = 'QR sessions';
+$pageSubtitle = count($sessions) . ' session(s)';
+
+require __DIR__ . '/../../components/admin/shell-start.php';
+?>
+
+<div class="mb-4 flex flex-wrap justify-between items-center gap-3">
+    <p class="text-sm text-slate-600">Activate, deactivate, or delete QR codes.</p>
+    <a href="/pages/admin/create_qr.php"
+       class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm">
+        <span class="material-symbols-outlined text-lg">add</span>
+        Create session
+    </a>
+</div>
+
+<div class="admin-card overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                    <th class="px-4 py-3 font-semibold">Code</th>
+                    <th class="px-4 py-3 font-semibold">Session</th>
+                    <th class="px-4 py-3 font-semibold">Class</th>
+                    <th class="px-4 py-3 font-semibold">Created</th>
+                    <th class="px-4 py-3 font-semibold">Expires</th>
+                    <th class="px-4 py-3 font-semibold">Active</th>
+                    <th class="px-4 py-3 font-semibold">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                <?php if (empty($sessions)): ?>
                     <tr>
-                        <th class="px-4 py-3">Code</th>
-                        <th class="px-4 py-3">Session</th>
-                        <th class="px-4 py-3">Class ID</th>
-                        <th class="px-4 py-3">Created</th>
-                        <th class="px-4 py-3">Expires</th>
-                        <th class="px-4 py-3">Active</th>
-                        <th class="px-4 py-3">Actions</th>
+                        <td colspan="7" class="px-4 py-8 text-slate-500">
+                            No QR sessions yet.
+                            <a href="/pages/admin/create_qr.php" class="text-emerald-700 font-semibold hover:underline">Create one</a>
+                        </td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($sessions)): ?>
-                        <tr><td class="px-4 py-4" colspan="7">No sessions found.</td></tr>
-                    <?php else: foreach ($sessions as $s): ?>
-                        <tr class="border-t">
-                            <td class="px-4 py-3 font-mono font-semibold"><?php echo htmlspecialchars($s['code']); ?></td>
-                            <td class="px-4 py-3"><?php echo htmlspecialchars($s['session_name']); ?></td>
-                            <td class="px-4 py-3"><?php echo htmlspecialchars($s['class_id']); ?></td>
-                            <td class="px-4 py-3"><?php echo htmlspecialchars($s['created_date']); ?></td>
-                            <td class="px-4 py-3"><?php echo htmlspecialchars($s['expires_at']); ?></td>
-                            <td class="px-4 py-3"><?php echo $s['is_active'] ? 'Yes' : 'No'; ?></td>
+                <?php else: ?>
+                    <?php foreach ($sessions as $s): ?>
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 font-mono font-bold text-emerald-800"><?= htmlspecialchars($s['code']) ?></td>
+                            <td class="px-4 py-3"><?= htmlspecialchars($s['session_name'] ?? '') ?></td>
+                            <td class="px-4 py-3"><?= htmlspecialchars((string) ($s['class_id'] ?? '—')) ?></td>
+                            <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($s['created_date'] ?? '') ?></td>
+                            <td class="px-4 py-3 text-slate-600"><?= htmlspecialchars($s['expires_at'] ?? '') ?></td>
                             <td class="px-4 py-3">
-                                <form method="post" style="display:inline-block;">
-                                    <input type="hidden" name="id" value="<?php echo $s['id']; ?>">
-                                    <?php if ($s['is_active']): ?>
-                                        <input type="hidden" name="action" value="deactivate">
-                                        <button class="px-2 py-1 bg-yellow-500 text-white rounded">Deactivate</button>
+                                <?= !empty($s['is_active']) ? '<span class="text-emerald-700 font-semibold">Yes</span>' : '<span class="text-slate-400">No</span>' ?>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-1">
+                                    <?php if (!empty($s['is_active'])): ?>
+                                        <form method="post" class="inline">
+                                            <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
+                                            <input type="hidden" name="action" value="deactivate">
+                                            <button type="submit" class="px-2 py-1 text-xs font-semibold bg-amber-500 text-white rounded hover:bg-amber-600">
+                                                Deactivate
+                                            </button>
+                                        </form>
                                     <?php else: ?>
-                                        <input type="hidden" name="action" value="activate">
-                                        <button class="px-2 py-1 bg-green-600 text-white rounded">Activate</button>
+                                        <form method="post" class="inline">
+                                            <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
+                                            <input type="hidden" name="action" value="activate">
+                                            <button type="submit" class="px-2 py-1 text-xs font-semibold bg-emerald-600 text-white rounded hover:bg-emerald-700">
+                                                Activate
+                                            </button>
+                                        </form>
                                     <?php endif; ?>
-                                </form>
-                                <form method="post" style="display:inline-block; margin-left:6px;" onsubmit="return confirm('Delete this session?');">
-                                    <input type="hidden" name="id" value="<?php echo $s['id']; ?>">
-                                    <input type="hidden" name="action" value="delete">
-                                    <button class="px-2 py-1 bg-red-600 text-white rounded">Delete</button>
-                                </form>
+                                    <form method="post" class="inline">
+                                        <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
+                                        <input type="hidden" name="action" value="delete">
+                                        <button type="submit" class="px-2 py-1 text-xs font-semibold bg-red-600 text-white rounded hover:bg-red-700">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
-                    <?php endforeach; endif; ?>
-                </tbody>
-            </table>
-        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
-</body>
-</html>
+</div>
+
+<?php require __DIR__ . '/../../components/admin/shell-end.php'; ?>

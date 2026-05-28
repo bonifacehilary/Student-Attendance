@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-  const api = window.__ADMIN_API || '/Mpemba/api/admin_data.php';
+  const api = window.__ADMIN_API || '/pages/api/attendance.php';
 
   function renderCharts(data) {
     if (typeof Chart !== 'undefined') {

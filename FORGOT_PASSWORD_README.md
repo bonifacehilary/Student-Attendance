@@ -49,7 +49,7 @@ CREATE TABLE password_resets (
 
 ### 1. Run Migration
 ```bash
-php bin/doctrine migrations:execute Mpemba\\Crud\\Migrations\\Version20260527000000 --up
+php bin/doctrine migrations:execute StudentAttendance\\Migrations\\Version20260527000000 --up
 ```
 
 ### 2. Access Forgot Password

@@ -3,11 +3,10 @@
 // API Endpoint for Attendance Operations
 
 require_once __DIR__ . '/../../config/bootstrap.php';
-require_once __DIR__ . '/../../utils/Utility.php';
+
+use StudentAttendance\Utils\AdminAuth;
 
 header('Content-Type: application/json');
-
-session_start();
 
 // Check if admin is logged in
 $isAdmin = isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
@@ -76,15 +75,7 @@ try {
                     exit;
                 }
                 
-                // Update or insert attendance
-                Utility::safeQuery(
-                    'INSERT INTO attendance (student_id, attendance_date, status)
-                     VALUES (?, ?, ?)
-                     ON DUPLICATE KEY UPDATE status = ?',
-                    [$studentId, $today, $status, $status],
-                    'INSERT'
-                );
-                
+                AdminAuth::upsertAttendance($studentId, $today, $status);
                 echo json_encode(['success' => true, 'message' => 'Attendance marked']);
             }
             break;
@@ -105,13 +96,7 @@ try {
                 foreach ($input['records'] as $record) {
                     if (isset($record['student_id']) && isset($record['status'])) {
                         try {
-                            Utility::safeQuery(
-                                'INSERT INTO attendance (student_id, attendance_date, status)
-                                 VALUES (?, ?, ?)
-                                 ON DUPLICATE KEY UPDATE status = ?',
-                                [$record['student_id'], $today, $record['status'], $record['status']],
-                                'INSERT'
-                            );
+                            AdminAuth::upsertAttendance((int) $record['student_id'], $today, $record['status']);
                             $successCount++;
                         } catch (\Throwable $e) {
                             // Continue with next record

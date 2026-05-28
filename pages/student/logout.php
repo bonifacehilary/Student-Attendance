@@ -2,7 +2,7 @@
 // pages/student/logout.php
 // Student logout handler
 
-session_start();
+require_once __DIR__ . '/../../config/bootstrap.php';
 session_destroy();
 
 // Clear cookies if they were set

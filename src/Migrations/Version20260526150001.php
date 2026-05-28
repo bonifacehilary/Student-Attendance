@@ -1,6 +1,6 @@
 <?php
 
-namespace Student_Attendance\Migrations;
+namespace StudentAttendance\Migrations;
 
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;

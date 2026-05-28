@@ -4,13 +4,13 @@
  * Provides database queries for the admin dashboard and admin pages
  * 
  * Purpose: Centralized database methods for admin operations and reporting
- * Namespace: Mpemba\Utils
+ * Namespace: StudentAttendance\Utils
  */
 
-namespace Mpemba\Utils;
+namespace StudentAttendance\Utils;
 
 use Exception;
-use Mpemba\Utils\Utility;
+use StudentAttendance\Utils\Utility;
 
 class AdminDatabase
 {

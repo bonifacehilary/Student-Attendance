@@ -8,8 +8,8 @@ Complete attendance management system with student portal (login, dashboard, ana
 ### 1. Setup Database
 ```bash
 # Run migrations (both required)
-php bin/doctrine migrations:execute Mpemba\\Crud\\Migrations\\Version20260526000000 --up
-php bin/doctrine migrations:execute Mpemba\\Crud\\Migrations\\Version20260527000000 --up
+php bin/doctrine migrations:execute StudentAttendance\\Migrations\\Version20260526000000 --up
+php bin/doctrine migrations:execute StudentAttendance\\Migrations\\Version20260527000000 --up
 
 # Seed test data
 php scratch/seed_students.php

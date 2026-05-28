@@ -1,8 +1,8 @@
 <?php
-namespace Mpemba\Controller;
+namespace StudentAttendance\Controller;
 
-use Mpemba\Utils\Database;
-use Mpemba\Utils\Utility;
+use StudentAttendance\Utils\Database;
+use StudentAttendance\Utils\Utility;
 
 class UserController {
     private $db;
@@ -15,7 +15,7 @@ class UserController {
         return [
             'id' => 0,
             'username' => 'admin',
-            'email' => 'admin@mpemba.local',
+            'email' => 'admin@eduattend.local',
             'password' => 'Admin@123',
             'first_name' => 'Site',
             'last_name' => 'Admin',
@@ -87,7 +87,7 @@ class UserController {
         $allUserRoles = [];
         if ($userId > 0) {
             try {
-                $userGroups = \Mpemba\Utils\Utility::safeQuery(
+                $userGroups = Utility::safeQuery(
                     "SELECT DISTINCT LOWER(TRIM(g.keyword)) AS keyword FROM user_group_relations ugr 
                      JOIN groups g ON g.id = ugr.group_id 
                      WHERE ugr.user_id = ? AND g.status = 'active'",

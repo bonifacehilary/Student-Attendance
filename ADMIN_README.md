@@ -164,7 +164,7 @@ WHERE attendance_date = CURDATE()
 ```bash
 # Run migration to create tables
 cd attendance
-php bin/doctrine migrations:execute Mpemba\\Crud\\Migrations\\Version20260526000000 --up
+php bin/doctrine migrations:execute StudentAttendance\\Migrations\\Version20260526000000 --up
 
 # Seed test students
 php scratch/seed_students.php

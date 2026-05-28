@@ -171,7 +171,7 @@ EduAttend
 1. **Run Migration**
    ```bash
    cd attendance
-   php bin/doctrine migrations:execute Mpemba\\Crud\\Migrations\\Version20260526000000 --up
+   php bin/doctrine migrations:execute StudentAttendance\\Migrations\\Version20260526000000 --up
    ```
 
 2. **Add Test Student Data**

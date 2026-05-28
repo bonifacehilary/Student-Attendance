@@ -3,9 +3,6 @@
 // Attendance Report Generation & Export
 
 require_once __DIR__ . '/../../config/bootstrap.php';
-require_once __DIR__ . '/../../utils/Utility.php';
-
-session_start();
 
 // Check if student is logged in
 if (!isset($_SESSION['student_id'])) {

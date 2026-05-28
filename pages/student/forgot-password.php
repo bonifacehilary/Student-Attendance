@@ -3,9 +3,6 @@
 // Forgot Password - Request Password Reset
 
 require_once __DIR__ . '/../../config/bootstrap.php';
-require_once __DIR__ . '/../../utils/Utility.php';
-
-session_start();
 
 $error = '';
 $success = '';

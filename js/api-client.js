@@ -1,9 +1,9 @@
 /**
- * Mpemba Store API Client - Simplified Version
+ * EduAttend Store API Client - Simplified Version
  * No backend - uses localStorage for data persistence
  */
 
-class MpembaAPI {
+class EduAttendAPI {
     constructor(baseURL = '/dee/api.php') {
         this.baseURL = baseURL;
         this.token = localStorage.getItem('auth_token');
@@ -75,7 +75,7 @@ class MpembaAPI {
 
 // Helper functions for backward compatibility
 async function login(username, password) {
-    const api = new MpembaAPI();
+    const api = new EduAttendAPI();
     const result = await api.login(username, password);
     return result.status === 'success' ? { success: true } : { success: false, error: result.message };
 }
@@ -218,9 +218,9 @@ function showNotification(message, type = 'info') {
 }
 
 // Global API instance
-const api = new MpembaAPI();
+const api = new EduAttendAPI();
 
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = MpembaAPI;
+    module.exports = EduAttendAPI;
 }

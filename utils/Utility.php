@@ -1,5 +1,5 @@
 <?php
-namespace Mpemba\Utils;
+namespace StudentAttendance\Utils;
 
 class Utility{
 
@@ -187,147 +187,16 @@ class Utility{
         echo '<script>Swal.fire(' . json_encode($options) . ');</script>';
     }
 
-    public static function getLoggedInUser()
+    public static function getLoggedInStudent(): ?array
     {
-        if (isset($_SESSION['user'])) {
-            $_SESSION['user_name'];
-            $_SESSION['user_id'];
-            return $_SESSION['user'];
-        }
-        return null;
-    }
-
-    public static function getProductImageUrl(array $product, ?string $categoryName = null): string
-    {
-        $imageUrl = trim((string) ($product['image_url'] ?? $product['image'] ?? ''));
-        if ($imageUrl !== '') {
-            return $imageUrl;
+        if (!isset($_SESSION['student_id'])) {
+            return null;
         }
 
-        if ($categoryName !== null && $categoryName !== '') {
-            return self::getCategoryImageUrl($categoryName, 900, 900);
-        }
-
-        return self::getCategoryImageUrl('', 900, 900);
-    }
-
-    public static function getCategoryImageUrl(string $categoryName, int $width = 1400, int $height = 900): string
-    {
-        $mapping = [
-            'Heritage Fashion' => 'https://images.unsplash.com/photo-1441986300917-64674bd600d8',
-            'Sanctuary Home' => 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7',
-            'Atelier Electronics' => 'https://images.unsplash.com/photo-1498049794561-7780e7231661',
-            'Natural Beauty' => 'https://images.unsplash.com/photo-1596462502278-27bfdc403348',
-            'Lifestyle Essentials' => 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b',
+        return [
+            'id' => (int) $_SESSION['student_id'],
+            'name' => $_SESSION['student_name'] ?? '',
         ];
-
-        $baseUrl = $mapping[$categoryName] ?? 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f';
-        return sprintf('%s?auto=format&fit=crop&w=%d&h=%d&q=80', $baseUrl, $width, $height);
-    }
-
-    // Cart-related methods
-    public static function getCartItems(int $userId): array
-    {
-        $query = "
-            SELECT ci.id, ci.product_id, ci.quantity, p.name, p.price, p.image, p.category
-            FROM cart_items ci
-            JOIN products p ON ci.product_id = p.id
-            WHERE ci.user_id = ?
-            ORDER BY ci.created_at ASC
-        ";
-        return self::safeQuery($query, [$userId]);
-    }
-
-    public static function addToCart(int $userId, int $productId, int $quantity = 1): bool
-    {
-        // Check if item already in cart
-        $existing = self::safeQuery(
-            "SELECT id, quantity FROM cart_items WHERE user_id = ? AND product_id = ?",
-            [$userId, $productId],
-            'SELECT',
-            true
-        );
-
-        if ($existing) {
-            // Update quantity
-            $newQty = $existing['quantity'] + $quantity;
-            return self::safeQuery(
-                "UPDATE cart_items SET quantity = ?, updated_at = NOW() WHERE id = ?",
-                [$newQty, $existing['id']],
-                'UPDATE'
-            );
-        } else {
-            // Insert new
-            return self::safeQuery(
-                "INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)",
-                [$userId, $productId, $quantity],
-                'INSERT'
-            ) !== null;
-        }
-    }
-
-    public static function updateCartItem(int $userId, int $productId, int $quantity): bool
-    {
-        if ($quantity <= 0) {
-            return self::removeFromCart($userId, $productId);
-        }
-
-        return self::safeQuery(
-            "UPDATE cart_items SET quantity = ?, updated_at = NOW() WHERE user_id = ? AND product_id = ?",
-            [$quantity, $userId, $productId],
-            'UPDATE'
-        );
-    }
-
-    public static function removeFromCart(int $userId, int $productId): bool
-    {
-        return self::safeQuery(
-            "DELETE FROM cart_items WHERE user_id = ? AND product_id = ?",
-            [$userId, $productId],
-            'DELETE'
-        );
-    }
-
-    public static function clearCart(int $userId): bool
-    {
-        return self::safeQuery(
-            "DELETE FROM cart_items WHERE user_id = ?",
-            [$userId],
-            'DELETE'
-        );
-    }
-
-    public static function createOrder(array $orderData): ?int
-    {
-        $fields = ['order_number', 'user_id', 'total', 'tax', 'shipping', 'status'];
-        $placeholders = str_repeat('?,', count($fields) - 1) . '?';
-        $values = [];
-        foreach ($fields as $field) {
-            $values[] = $orderData[$field] ?? null;
-        }
-
-        $result = self::safeQuery(
-            "INSERT INTO orders (" . implode(',', $fields) . ") VALUES ({$placeholders})",
-            $values,
-            'INSERT'
-        );
-
-        return $result ? self::getLastInsertId() : null;
-    }
-
-    public static function createOrderItem(int $orderId, array $itemData): bool
-    {
-        return self::safeQuery(
-            "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)",
-            [$orderId, $itemData['product_id'], $itemData['quantity'], $itemData['price']],
-            'INSERT'
-        ) !== null;
-    }
-
-    private static function getLastInsertId(): int
-    {
-        $conn = $GLOBALS['db'];
-        return (int) $conn->lastInsertId();
     }
 
 }

@@ -3,12 +3,15 @@
 // Admin Login Page
 
 require_once __DIR__ . '/../../config/bootstrap.php';
-require_once __DIR__ . '/../../utils/Utility.php';
 
-session_start();
+use StudentAttendance\Utils\AdminAuth;
+
+if (AdminAuth::check()) {
+    header('Location: /pages/admin/dashboard.php');
+    exit;
+}
 
 $error = '';
-$success = '';
 
 // Handle login form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -28,28 +31,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['admin_email'] = $email;
             $_SESSION['admin_logged_in'] = true;
             
-            header('Location: /pages/admin/dashboard.php?admin=true');
+            header('Location: /pages/admin/dashboard.php');
             exit;
         } else {
             $error = 'Invalid email or password';
         }
     }
 }
+
+$pageTitle = 'Admin Login';
+$assetContext = 'admin';
+$pageStyles = 'body { background: linear-gradient(135deg, #059669 0%, #047857 100%); }';
+require __DIR__ . '/../../components/ui/head.php';
 ?>
-<!DOCTYPE html>
-<html class="light" lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Admin Login | EduAttend</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-    </style>
-</head>
 <body class="flex items-center justify-center min-h-screen p-4">
     <div class="w-full max-w-md">
         <!-- Card -->
@@ -139,6 +133,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <a href="/pages/student/login.php" class="text-green-600 font-bold hover:underline mt-2 block">
                     Student Login →
                 </a>
+                <a href="/pages/teacher/login.php" class="text-sky-600 font-bold hover:underline mt-1 block">
+                    Teacher Login →
+                </a>
             </div>
         </div>
     </div>
@@ -157,5 +154,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
     </script>
+<?php require __DIR__ . '/../../components/ui/scripts.php'; ?>
 </body>
 </html>

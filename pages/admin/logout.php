@@ -1,18 +1,16 @@
 <?php
-// pages/admin/logout.php
-// Admin Logout Handler
+// Admin logout — clears admin session only (keeps student session if any)
 
-session_start();
+require_once __DIR__ . '/../../config/bootstrap.php';
 
-// Destroy session and clear cookies
-session_destroy();
+unset(
+    $_SESSION['admin_logged_in'],
+    $_SESSION['admin_id'],
+    $_SESSION['admin_email'],
+    $_SESSION['admin_flash'],
+    $_SESSION['admin_last_qr_code'],
+    $_SESSION['admin_last_qr_expires']
+);
 
-// Clear the admin session cookie
-if (isset($_COOKIE['PHPSESSID'])) {
-    setcookie('PHPSESSID', '', time() - 3600, '/');
-}
-
-// Redirect to admin login
 header('Location: /pages/admin/login.php');
 exit;
-?>

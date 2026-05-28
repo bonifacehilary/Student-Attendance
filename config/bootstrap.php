@@ -11,19 +11,6 @@ if (file_exists(__DIR__ . '/../.env')) {
     $dotenv->safeLoad();
 }
 
-// Simple autoloader for Mpemba namespace
-spl_autoload_register(function ($class) {
-    // Convert namespace to file path
-    $class = str_replace('Mpemba\\', '', $class);
-    $class = str_replace('\\', '/', $class);
-
-    $file = __DIR__ . '/../' . $class . '.php';
-
-    if (file_exists($file)) {
-        require_once $file;
-    }
-});
-
 $connectionParams = [
     'driver'   => $_ENV['DB_DRIVER'] ?? 'pdo_mysql',
     'host'     => $_ENV['DB_HOST'] ?? '127.0.0.1',
@@ -46,7 +33,12 @@ if (($connectionParams['driver'] ?? '') === 'pdo_sqlite') {
 $db = DriverManager::getConnection($connectionParams);
 $GLOBALS['db'] = $db;
 
-// Start session with a shared cookie path so auth sessions work across the storefront and API endpoints.
+// Load shared utils (Composer PSR-4: StudentAttendance\Utils\ -> utils/)
+if (!class_exists('Utility', false)) {
+    class_alias(\StudentAttendance\Utils\Utility::class, 'Utility');
+}
+
+// Start session with a shared cookie path so auth works across pages and API endpoints.
 if (PHP_SAPI !== 'cli') {
     $cookieParams = session_get_cookie_params();
     session_set_cookie_params([
@@ -59,5 +51,28 @@ if (PHP_SAPI !== 'cli') {
     ]);
     if (session_status() === PHP_SESSION_NONE) {
         session_start();
+    }
+
+    // Restore remembered student login if session is missing.
+    if (empty($_SESSION['student_id']) && !empty($_COOKIE['student_id'])) {
+        $rememberedStudentId = (int) $_COOKIE['student_id'];
+        if ($rememberedStudentId > 0) {
+            try {
+                $student = Utility::safeQuery(
+                    'SELECT id, name FROM students WHERE id = ? LIMIT 1',
+                    [$rememberedStudentId],
+                    'SELECT',
+                    true
+                );
+                if ($student) {
+                    $_SESSION['student_id'] = (int) $student['id'];
+                    $_SESSION['student_name'] = $student['name'] ?? '';
+                } else {
+                    setcookie('student_id', '', time() - 3600, '/');
+                }
+            } catch (\Throwable $e) {
+                error_log('Bootstrap student auto-login error: ' . $e->getMessage());
+            }
+        }
     }
 }

@@ -1,12 +1,12 @@
 <?php
-$mainMenuRoutes = \Mpemba\Utils\Router::getMenuRoutes('main');
-$currentRoute = \Mpemba\Utils\Router::getCurrentRoute();
+$mainMenuRoutes = \StudentAttendance\Utils\Router::getMenuRoutes('main');
+$currentRoute = \StudentAttendance\Utils\Router::getCurrentRoute();
 
 function renderMenuItems(array $routes, string $currentRoute, int $level = 0, bool $isMobile = false) {
     $html = '';
     foreach ($routes as $route) {
         $hasChildren = !empty($route['children']);
-        $isActive = \Mpemba\Utils\Router::isRouteActive($route, $currentRoute);
+        $isActive = \StudentAttendance\Utils\Router::isRouteActive($route, $currentRoute);
         $disabled = $route['disabled'] ?? false;
 
         $itemId = 'menu-' . str_replace(['/', ' '], ['-', '-'], $route['key']);
@@ -77,7 +77,7 @@ function renderMenuItems(array $routes, string $currentRoute, int $level = 0, bo
         <a href="/home" class="flex items-center gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-white text-lg font-black">M</div>
             <div>
-                <p class="text-base font-semibold text-slate-700 dark:text-slate-100">Mpemba</p>
+                <p class="text-base font-semibold text-slate-700 dark:text-slate-100">EduAttend</p>
                 <p class="text-xs tracking-[0.35em] uppercase text-slate-500 dark:text-slate-400">Marketplace</p>
             </div>
         </a>

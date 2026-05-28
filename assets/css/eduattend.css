@@ -1,0 +1,42 @@
+/* EduAttend — Student Attendance shared styles */
+:root {
+    --eduattend-primary: #10b981;
+    --eduattend-primary-dark: #059669;
+    --eduattend-surface: #f7f9fb;
+    --eduattend-on-surface: #191c1e;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--eduattend-surface);
+    color: var(--eduattend-on-surface);
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+}
+
+.eduattend-brand {
+    color: var(--eduattend-primary-dark);
+    font-weight: 700;
+}
+
+.eduattend-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #475569;
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s;
+}
+
+.eduattend-nav-link:hover,
+.eduattend-nav-link.active {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--eduattend-primary-dark);
+}
