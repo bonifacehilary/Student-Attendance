@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!in_array($bulkStatus, ['present', 'late', 'absent'], true)) {
                 throw new \InvalidArgumentException('Invalid bulk status');
             }
-            $allStudents = Utility::safeQuery('SELECT id FROM students', [], 'SELECT');
+            $allStudents = Utility::safeQuery('SELECT id FROM students WHERE COALESCE(is_active, 1) = 1', [], 'SELECT');
             foreach ($allStudents as $row) {
                 AdminAuth::upsertAttendance((int) $row['id'], $markDate, $bulkStatus);
             }
@@ -70,7 +70,7 @@ $stats = AdminAuth::getStatsForDate($today);
 
 try {
     $students = Utility::safeQuery(
-        'SELECT id, name, admission_number, email FROM students ORDER BY name ASC',
+        'SELECT id, name, admission_number, email FROM students WHERE COALESCE(is_active, 1) = 1 ORDER BY name ASC',
         [],
         'SELECT'
     );

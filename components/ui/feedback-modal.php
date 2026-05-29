@@ -1,6 +1,7 @@
 <!-- Floating Feedback Button -->
 <div id="feedback-floating-btn" class="fixed bottom-6 right-6 z-40">
-    <button 
+    <button
+        type="button"
         onclick="openFeedbackModal()" 
         class="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-br from-primary to-cyan-500 px-4 py-3 text-white font-semibold shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40 transition-all duration-300 hover:scale-110 group"
         title="Send Feedback"
@@ -23,7 +24,8 @@
                     <p class="text-xs text-white/80">We'd love to hear from you</p>
                 </div>
             </div>
-            <button 
+            <button
+                type="button"
                 onclick="closeFeedbackModal()" 
                 class="text-white hover:bg-white/20 p-1 rounded-lg transition"
             >

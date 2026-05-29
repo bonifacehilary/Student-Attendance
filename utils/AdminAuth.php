@@ -18,6 +18,7 @@ class AdminAuth
             header('Location: /pages/admin/login.php');
             exit;
         }
+        UserManagement::ensureSchema();
     }
 
     public static function setFlash(string $message): void
@@ -95,11 +96,11 @@ class AdminAuth
         try {
             $row = Utility::safeQuery(
                 'SELECT 
-                    (SELECT COUNT(DISTINCT student_id) FROM attendance WHERE attendance_date = ?) AS marked,
-                    (SELECT COUNT(*) FROM students) AS total,
-                    (SELECT COUNT(*) FROM attendance WHERE attendance_date = ? AND status = ?) AS present,
-                    (SELECT COUNT(*) FROM attendance WHERE attendance_date = ? AND status = ?) AS late,
-                    (SELECT COUNT(*) FROM attendance WHERE attendance_date = ? AND status = ?) AS absent',
+                    (SELECT COUNT(DISTINCT a.student_id) FROM attendance a INNER JOIN students s ON s.id = a.student_id WHERE a.attendance_date = ? AND COALESCE(s.is_active, 1) = 1) AS marked,
+                    (SELECT COUNT(*) FROM students WHERE COALESCE(is_active, 1) = 1) AS total,
+                    (SELECT COUNT(*) FROM attendance a INNER JOIN students s ON s.id = a.student_id WHERE a.attendance_date = ? AND a.status = ? AND COALESCE(s.is_active, 1) = 1) AS present,
+                    (SELECT COUNT(*) FROM attendance a INNER JOIN students s ON s.id = a.student_id WHERE a.attendance_date = ? AND a.status = ? AND COALESCE(s.is_active, 1) = 1) AS late,
+                    (SELECT COUNT(*) FROM attendance a INNER JOIN students s ON s.id = a.student_id WHERE a.attendance_date = ? AND a.status = ? AND COALESCE(s.is_active, 1) = 1) AS absent',
                 [$date, $date, 'present', $date, 'late', $date, 'absent'],
                 'SELECT',
                 true

@@ -285,9 +285,9 @@ function getNotificationDisplay($notification) {
                 </div>
                 <h2 class="font-bold text-xl text-green-700">Notifications</h2>
             </div>
-            <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600" title="More options">
+            <a href="/pages/student/settings.php" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors text-gray-600" title="Notification settings">
                 <span class="material-symbols-outlined">more_vert</span>
-            </button>
+            </a>
         </header>
 
         <!-- Content -->

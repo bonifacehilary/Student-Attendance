@@ -18,6 +18,9 @@ class StudentAuth
             header('Location: /pages/student/login.php');
             exit;
         }
+        if (class_exists(UserManagement::class)) {
+            UserManagement::ensureSchema();
+        }
     }
 
     public static function studentId(): int
@@ -68,14 +71,26 @@ class StudentAuth
     public static function getStudent(int $studentId): ?array
     {
         try {
+            if (class_exists(UserManagement::class)) {
+                UserManagement::ensureSchema();
+            }
             $row = Utility::safeQuery(
-                'SELECT id, name, email, admission_number, student_class, phone, profile_photo
-                 FROM students WHERE id = ? LIMIT 1',
+                'SELECT s.id, s.name, s.email, s.admission_number,
+                        COALESCE(c.name, s.student_class) AS student_class,
+                        s.phone, s.profile_photo, COALESCE(s.is_active, 1) AS is_active,
+                        s.department_id, s.class_id, d.name AS department_name
+                 FROM students s
+                 LEFT JOIN classes c ON c.id = s.class_id
+                 LEFT JOIN departments d ON d.id = s.department_id
+                 WHERE s.id = ? LIMIT 1',
                 [$studentId],
                 'SELECT',
                 true
             );
-            return $row ?: null;
+            if (!$row || empty($row['is_active'])) {
+                return null;
+            }
+            return $row;
         } catch (\Throwable $e) {
             error_log('StudentAuth::getStudent: ' . $e->getMessage());
             return null;
@@ -167,6 +182,119 @@ class StudentAuth
             error_log('StudentAuth::getAttendanceHistory: ' . $e->getMessage());
             return [];
         }
+    }
+
+    /** @return array<string, mixed>|null */
+    public static function getNextClass(int $studentId): ?array
+    {
+        $student = self::getStudent($studentId);
+        $studentClass = trim((string) ($student['student_class'] ?? ''));
+        if ($studentClass === '') {
+            return null;
+        }
+
+        try {
+            Timetable::ensureSchema();
+            $entries = Timetable::entries($studentClass);
+        } catch (\Throwable $e) {
+            error_log('StudentAuth::getNextClass: ' . $e->getMessage());
+            return null;
+        }
+
+        if (empty($entries)) {
+            return null;
+        }
+
+        $now = new \DateTimeImmutable();
+        $todayNumber = (int) $now->format('N');
+        $best = null;
+        $bestTime = null;
+        $dayMap = array_flip(Timetable::DAYS);
+
+        foreach ($entries as $entry) {
+            $dayIndex = ($dayMap[$entry['day_of_week'] ?? ''] ?? 0) + 1;
+            $daysAhead = ($dayIndex - $todayNumber + 7) % 7;
+            $candidate = $now->modify("+{$daysAhead} days")->setTime(
+                (int) substr((string) $entry['start_time'], 0, 2),
+                (int) substr((string) $entry['start_time'], 3, 2)
+            );
+            if ($candidate < $now) {
+                $candidate = $candidate->modify('+7 days');
+            }
+            if ($bestTime === null || $candidate < $bestTime) {
+                $bestTime = $candidate;
+                $best = $entry;
+            }
+        }
+
+        if ($best !== null && $bestTime !== null) {
+            $best['starts_at_label'] = $bestTime->format('D, M j') . ' at ' . $bestTime->format('g:i A');
+        }
+
+        return $best;
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    public static function getReceivableQrSessions(int $studentId): array
+    {
+        $now = self::nowExpr();
+        $student = self::getStudent($studentId);
+        $studentClass = trim((string) ($student['student_class'] ?? ''));
+
+        try {
+            $sessions = Utility::safeQuery(
+                "SELECT q.id, q.code, q.session_name, q.created_date, q.expires_at, q.created_by,
+                        t.name AS teacher_name, t.assigned_class
+                 FROM attendance_qr_sessions q
+                 LEFT JOIN teachers t ON t.id = q.created_by
+                 WHERE q.is_active = 1 AND q.expires_at >= {$now}
+                 ORDER BY q.created_date DESC",
+                [],
+                'SELECT'
+            );
+        } catch (\Throwable $e) {
+            error_log('StudentAuth::getReceivableQrSessions: ' . $e->getMessage());
+            return [];
+        }
+
+        $hasQrColumn = self::attendanceHasQrColumn();
+        $receivableSessions = [];
+        foreach ($sessions as $session) {
+            $assignedClass = trim((string) ($session['assigned_class'] ?? ''));
+            $hasTeacherOwner = !empty($session['teacher_name']) || $assignedClass !== '';
+            $isTeacherForStudent = $hasTeacherOwner
+                && $assignedClass !== ''
+                && $studentClass !== ''
+                && strcasecmp($assignedClass, $studentClass) === 0;
+
+            if ($hasTeacherOwner && !$isTeacherForStudent) {
+                continue;
+            }
+
+            $session['source'] = $isTeacherForStudent ? 'Teacher' : 'Admin';
+            $session['source_name'] = $isTeacherForStudent
+                ? ($session['teacher_name'] ?: 'Teacher')
+                : 'Administration';
+            $session['already_marked'] = false;
+
+            if ($hasQrColumn) {
+                try {
+                    $marked = Utility::safeQuery(
+                        'SELECT id FROM attendance WHERE student_id = ? AND qr_session_id = ? AND status = ? LIMIT 1',
+                        [$studentId, (int) $session['id'], 'present'],
+                        'SELECT',
+                        true
+                    );
+                    $session['already_marked'] = (bool) $marked;
+                } catch (\Throwable $e) {
+                    $session['already_marked'] = false;
+                }
+            }
+
+            $receivableSessions[] = $session;
+        }
+
+        return $receivableSessions;
     }
 
     /** @return array{success:bool,message:string,status:string} */

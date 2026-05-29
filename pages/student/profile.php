@@ -121,7 +121,7 @@ require __DIR__ . '/../../components/student/layout-start.php';
     </form>
 </div>
 
-<div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+<div id="change-password" class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
     <div class="px-6 py-3 border-b border-slate-200 bg-slate-100">
         <h3 class="text-sm font-bold text-slate-900">Change Password</h3>
     </div>

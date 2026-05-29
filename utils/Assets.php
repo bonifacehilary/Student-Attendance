@@ -123,8 +123,11 @@ class Assets
         return [
             ['label' => 'Dashboard', 'href' => '/pages/admin/dashboard.php', 'icon' => 'dashboard'],
             ['label' => 'Mark attendance', 'href' => '/pages/admin/attendance.php', 'icon' => 'fact_check'],
+            ['label' => 'Users & roles', 'href' => '/pages/admin/users.php', 'icon' => 'manage_accounts'],
+            ['label' => 'Departments', 'href' => '/pages/admin/departments.php', 'icon' => 'account_tree'],
             ['label' => 'Students', 'href' => '/pages/admin/students.php', 'icon' => 'groups'],
             ['label' => 'Reports', 'href' => '/pages/admin/reports.php', 'icon' => 'summarize'],
+            ['label' => 'Timetable', 'href' => '/pages/admin/timetable.php', 'icon' => 'calendar_month'],
             ['label' => 'QR sessions', 'href' => '/pages/admin/qrs.php', 'icon' => 'qr_code_2'],
             ['label' => 'Create QR', 'href' => '/pages/admin/create_qr.php', 'icon' => 'add_circle'],
         ];
@@ -138,6 +141,7 @@ class Assets
             ['label' => 'Mark attendance', 'href' => '/pages/teacher/attendance.php', 'icon' => 'fact_check'],
             ['label' => 'My class', 'href' => '/pages/teacher/students.php', 'icon' => 'groups'],
             ['label' => 'Reports', 'href' => '/pages/teacher/reports.php', 'icon' => 'summarize'],
+            ['label' => 'My timetable', 'href' => '/pages/teacher/timetable.php', 'icon' => 'calendar_month'],
             ['label' => 'QR sessions', 'href' => '/pages/teacher/qrs.php', 'icon' => 'qr_code_2'],
             ['label' => 'Create QR', 'href' => '/pages/teacher/create_qr.php', 'icon' => 'add_circle'],
         ];

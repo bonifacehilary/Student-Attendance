@@ -4,11 +4,14 @@
 
 require_once __DIR__ . '/../../config/bootstrap.php';
 
-// If already logged in, redirect to dashboard after brief delay
-// Otherwise redirect to login
-$redirectUrl = isset($_SESSION['student_id']) 
-    ? '/pages/student/dashboard.php' 
-    : '/pages/student/login.php';
+// If already logged in, send to dashboard immediately.
+if (isset($_SESSION['student_id'])) {
+    header('Location: /pages/student/dashboard.php');
+    exit;
+}
+
+// Otherwise show the splash, then redirect to login.
+$redirectUrl = '/pages/student/login.php';
 
 $pageTitle = 'Loading';
 $assetContext = 'student';
@@ -22,6 +25,15 @@ CSS;
 require __DIR__ . '/../../components/ui/head.php';
 ?>
 <body class="brand-bg flex items-center justify-center min-h-screen overflow-hidden antialiased">
+    <noscript>
+        <div class="fixed inset-0 flex items-center justify-center bg-slate-950/90 text-white text-center p-4">
+            <div class="max-w-sm rounded-xl border border-white/10 bg-slate-900/95 p-6">
+                <p class="mb-3 font-bold">JavaScript is disabled.</p>
+                <p class="mb-4 text-sm">Your browser needs JavaScript to continue automatically. Click below to open the login page.</p>
+                <a class="inline-block rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white" href="<?= htmlspecialchars($redirectUrl) ?>">Open login page</a>
+            </div>
+        </div>
+    </noscript>
     <!-- Splash Container -->
     <main class="flex flex-col items-center justify-between h-screen py-16 px-4">
         <!-- Spacer for top balance -->
@@ -82,10 +94,10 @@ require __DIR__ . '/../../components/ui/head.php';
             }
         }, 2500);
 
-        // Redirect after delay
+        // Redirect after a short delay for smoother transition
         setTimeout(() => {
             window.location.href = '<?php echo $redirectUrl; ?>';
-        }, 3500);
+        }, 500);
     </script>
 <?php require __DIR__ . '/../../components/ui/scripts.php'; ?>
 </body>

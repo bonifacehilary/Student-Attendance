@@ -12,6 +12,39 @@ $generatedCode = $_SESSION['admin_last_qr_code'] ?? null;
 $expiresAt = $_SESSION['admin_last_qr_expires'] ?? null;
 unset($_SESSION['admin_last_qr_code'], $_SESSION['admin_last_qr_expires']);
 
+// Keep the normal create page flow, but make the default session automatic.
+$createQrSession = function (?string $sessionName = null, ?int $classId = null, int $duration = 60): array {
+    if ($sessionName === null || trim($sessionName) === '') {
+        $sessionName = 'QR session - ' . date('M j, g:i A');
+    }
+
+    $generatedCode = strtoupper(bin2hex(random_bytes(4)));
+    $createdBy = $_SESSION['admin_id'] ?? 0;
+    $createdDate = date('Y-m-d H:i:s');
+    $expiresAt = date('Y-m-d H:i:s', strtotime("+{$duration} minutes"));
+
+    Utility::safeQuery(
+        'INSERT INTO attendance_qr_sessions (code, class_id, session_name, created_by, created_date, expires_at, is_active)
+         VALUES (?, ?, ?, ?, ?, ?, 1)',
+        [$generatedCode, $classId, $sessionName, $createdBy, $createdDate, $expiresAt],
+        'INSERT'
+    );
+
+    return ['code' => $generatedCode, 'expires' => $expiresAt];
+};
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($_GET['generated'])) {
+    try {
+        $result = $createQrSession();
+        $_SESSION['admin_last_qr_code'] = $result['code'];
+        $_SESSION['admin_last_qr_expires'] = $result['expires'];
+        AdminAuth::redirect('/pages/admin/create_qr.php?generated=1', 'QR session auto-generated: ' . $result['code']);
+    } catch (\Throwable $e) {
+        error_log('Auto create QR: ' . $e->getMessage());
+        $errors[] = 'Failed to auto-generate QR session. Ensure the database is set up.';
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sessionName = trim($_POST['session_name'] ?? '');
     $classId = (int) ($_POST['class_id'] ?? 0) ?: null;
@@ -21,21 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Session name is required.';
     } else {
         try {
-            $generatedCode = strtoupper(bin2hex(random_bytes(4)));
-            $createdBy = $_SESSION['admin_id'] ?? 0;
-            $createdDate = date('Y-m-d H:i:s');
-            $expiresAt = date('Y-m-d H:i:s', strtotime("+{$duration} minutes"));
-
-            Utility::safeQuery(
-                'INSERT INTO attendance_qr_sessions (code, class_id, session_name, created_by, created_date, expires_at, is_active)
-                 VALUES (?, ?, ?, ?, ?, ?, 1)',
-                [$generatedCode, $classId, $sessionName, $createdBy, $createdDate, $expiresAt],
-                'INSERT'
-            );
-
-            $_SESSION['admin_last_qr_code'] = $generatedCode;
-            $_SESSION['admin_last_qr_expires'] = $expiresAt;
-            AdminAuth::redirect('/pages/admin/create_qr.php', 'QR session created: ' . $generatedCode);
+            $result = $createQrSession($sessionName, $classId, $duration);
+            $_SESSION['admin_last_qr_code'] = $result['code'];
+            $_SESSION['admin_last_qr_expires'] = $result['expires'];
+            AdminAuth::redirect('/pages/admin/create_qr.php?generated=1', 'QR session created: ' . $result['code']);
         } catch (\Throwable $e) {
             error_log('Create QR: ' . $e->getMessage());
             $errors[] = 'Failed to create QR session. Ensure the database is set up.';

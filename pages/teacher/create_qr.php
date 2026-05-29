@@ -11,11 +11,9 @@ $generatedCode = $_SESSION['teacher_last_qr_code'] ?? null;
 $expiresAt = $_SESSION['teacher_last_qr_expires'] ?? null;
 unset($_SESSION['teacher_last_qr_code'], $_SESSION['teacher_last_qr_expires']);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $sessionName = trim($_POST['session_name'] ?? '');
-    $duration = max(1, (int) ($_POST['duration_minutes'] ?? 60));
-
-    if ($sessionName === '') {
+// Helper function to create QR session
+$createQrSession = function($sessionName = null, $duration = 60) use ($assignedClass, $teacherId) {
+    if (empty($sessionName)) {
         $sessionName = $assignedClass . ' — ' . date('M j, g:i A');
     }
 
@@ -24,18 +22,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $createdDate = date('Y-m-d H:i:s');
         $expiresAt = date('Y-m-d H:i:s', strtotime("+{$duration} minutes"));
 
-        Utility::safeQuery(
+        \StudentAttendance\Utils\Utility::safeQuery(
             'INSERT INTO attendance_qr_sessions (code, class_id, session_name, created_by, created_date, expires_at, is_active)
              VALUES (?, ?, ?, ?, ?, ?, 1)',
             [$generatedCode, null, $sessionName, $teacherId, $createdDate, $expiresAt],
             'INSERT'
         );
 
-        $_SESSION['teacher_last_qr_code'] = $generatedCode;
-        $_SESSION['teacher_last_qr_expires'] = $expiresAt;
-        TeacherAuth::redirect('/pages/teacher/create_qr.php', 'QR session created: ' . $generatedCode);
+        return ['code' => $generatedCode, 'expires' => $expiresAt];
     } catch (\Throwable $e) {
         error_log('Teacher create QR: ' . $e->getMessage());
+        throw $e;
+    }
+};
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && empty($_GET['generated'])) {
+    try {
+        $result = $createQrSession();
+        $_SESSION['teacher_last_qr_code'] = $result['code'];
+        $_SESSION['teacher_last_qr_expires'] = $result['expires'];
+        TeacherAuth::redirect('/pages/teacher/create_qr.php?generated=1', 'QR session auto-generated: ' . $result['code']);
+    } catch (\Throwable $e) {
+        $errors[] = 'Failed to auto-generate QR session.';
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? 'custom';
+
+    try {
+        if ($action === 'auto_generate') {
+            // Quick auto-generate with defaults (60 minutes, class name + timestamp)
+            $result = $createQrSession($assignedClass . ' — ' . date('M j, g:i A'), 60);
+            $_SESSION['teacher_last_qr_code'] = $result['code'];
+            $_SESSION['teacher_last_qr_expires'] = $result['expires'];
+            TeacherAuth::redirect('/pages/teacher/create_qr.php?generated=1', 'QR session auto-generated: ' . $result['code']);
+        } else {
+            // Custom session from form
+            $sessionName = trim($_POST['session_name'] ?? '');
+            $duration = max(1, (int) ($_POST['duration_minutes'] ?? 60));
+
+            if ($sessionName === '') {
+                $sessionName = $assignedClass . ' — ' . date('M j, g:i A');
+            }
+
+            $result = $createQrSession($sessionName, $duration);
+            $_SESSION['teacher_last_qr_code'] = $result['code'];
+            $_SESSION['teacher_last_qr_expires'] = $result['expires'];
+            TeacherAuth::redirect('/pages/teacher/create_qr.php?generated=1', 'QR session created: ' . $result['code']);
+        }
+    } catch (\Throwable $e) {
         $errors[] = 'Failed to create QR session.';
     }
 }
@@ -56,7 +92,24 @@ require __DIR__ . '/../../components/teacher/shell-start.php';
 <?php endif; ?>
 
 <div class="grid lg:grid-cols-2 gap-6">
+    <!-- Quick Auto-Generate Button -->
+    <form method="post" class="admin-card p-6 flex flex-col justify-between">
+        <div>
+            <h3 class="font-bold text-slate-900 mb-2">Quick Start</h3>
+            <p class="text-sm text-slate-600 mb-6">Generate a QR session instantly with default settings (60 minutes, class name + current time).</p>
+        </div>
+        <input type="hidden" name="action" value="auto_generate">
+        <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-3 rounded-lg text-sm w-full flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">flash_on</span>
+            Auto Generate Session
+        </button>
+    </form>
+
+    <!-- Custom Session Form -->
     <form method="post" class="admin-card p-6 space-y-4">
+        <h3 class="font-bold text-slate-900 mb-2">Custom Settings</h3>
+        <input type="hidden" name="action" value="custom">
+
         <div>
             <label class="block text-sm font-semibold text-slate-700 mb-1">Session name</label>
             <input name="session_name"
@@ -76,19 +129,22 @@ require __DIR__ . '/../../components/teacher/shell-start.php';
             <a href="/pages/teacher/qrs.php" class="text-sm text-slate-600 hover:underline py-2">View my sessions</a>
         </div>
     </form>
-
-    <?php if ($generatedCode): ?>
-        <div class="admin-card p-6">
-            <h3 class="font-bold text-slate-900 mb-3">Generated code</h3>
-            <p class="text-2xl font-mono font-bold text-sky-800 bg-slate-50 border rounded-lg px-4 py-3 inline-block">
-                <?= htmlspecialchars($generatedCode) ?>
-            </p>
-            <p class="text-sm text-slate-600 mt-4">Expires: <?= htmlspecialchars($expiresAt ?? '') ?></p>
-            <p class="text-sm text-slate-500 mt-2">Students enter this on
-                <a href="/pages/student/qr-attendance.php" class="text-sky-700 font-semibold hover:underline">QR attendance</a>.
-            </p>
-        </div>
-    <?php endif; ?>
 </div>
+
+<?php if ($generatedCode): ?>
+    <div class="admin-card p-6 mt-6 border-2 border-emerald-200 bg-emerald-50">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="material-symbols-outlined text-emerald-700 text-2xl">check_circle</span>
+            <h3 class="font-bold text-slate-900">QR Session Created</h3>
+        </div>
+        <p class="text-2xl font-mono font-bold text-emerald-900 bg-white border-2 border-emerald-300 rounded-lg px-4 py-3 inline-block mb-4">
+            <?= htmlspecialchars($generatedCode) ?>
+        </p>
+        <div class="space-y-2 text-sm">
+            <p class="text-slate-700"><strong>Expires:</strong> <?= htmlspecialchars($expiresAt ?? '') ?></p>
+            <p class="text-slate-600">Share this code with students or they can enter it on <a href="/pages/student/qr-attendance.php" class="text-emerald-700 font-semibold hover:underline">QR attendance page</a>.</p>
+        </div>
+    </div>
+<?php endif; ?>
 
 <?php require __DIR__ . '/../../components/teacher/shell-end.php'; ?>

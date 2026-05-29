@@ -90,7 +90,7 @@ function renderMenuItems(array $routes, string $currentRoute, int $level = 0, bo
             <!-- This will be populated by JavaScript -->
         </div>
 
-        <button id="mobileMenuButton" class="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 transition dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200" aria-expanded="false" aria-label="Toggle navigation menu">
+        <button id="mobileMenuButton" type="button" class="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 transition dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200" aria-expanded="false" aria-label="Toggle navigation menu">
             <span class="material-symbols-outlined">menu</span>
         </button>
     </div>
@@ -191,7 +191,7 @@ function renderMenuItems(array $routes, string $currentRoute, int $level = 0, bo
                         <div class="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-3 py-2 shadow-sm dark:border-slate-800 dark:bg-slate-950">
                             <span class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-700 dark:bg-slate-900 dark:text-slate-200">${(user.first_name || user.username || 'U').charAt(0).toUpperCase()}</span>
                             <span class="text-slate-600 dark:text-slate-300 text-sm">${user.first_name || user.username}</span>
-                            <button onclick="logout()" class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-red-300 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-200 transition dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-red-300 dark:focus:ring-red-700" title="Logout">
+                            <button type="button" onclick="logout()" class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-red-300 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-200 transition dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:text-red-300 dark:focus:ring-red-700" title="Logout">
                                 <span class="material-symbols-outlined">logout</span>
                             </button>
                         </div>
@@ -218,7 +218,7 @@ function renderMenuItems(array $routes, string $currentRoute, int $level = 0, bo
                             </span>
                             My Orders
                         </a>
-                        <button onclick="logout()" class="flex w-full items-center justify-center gap-2 rounded-3xl bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200 transition dark:focus:ring-red-700" title="Logout">
+                        <button type="button" onclick="logout()" class="flex w-full items-center justify-center gap-2 rounded-3xl bg-red-600 px-4 py-3 text-sm font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-200 transition dark:focus:ring-red-700" title="Logout">
                             <span class="material-symbols-outlined">logout</span>
                             <span>Logout</span>
                         </button>

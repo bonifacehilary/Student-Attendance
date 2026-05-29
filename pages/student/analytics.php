@@ -268,9 +268,9 @@ $absentCount = $stats['absent_days'] ?? 4;
             </a>
             <h1 class="font-headline-md text-headline-md-mobile text-primary dark:text-primary-fixed-dim">Analytics</h1>
         </div>
-        <button class="active:scale-95 transition-transform duration-150 p-2">
+        <a href="/pages/student/report.php" class="active:scale-95 transition-transform duration-150 p-2" title="Open report">
             <span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">more_vert</span>
-        </button>
+        </a>
     </header>
 
     <main class="px-container-padding-mobile pt-6 space-y-6">

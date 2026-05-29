@@ -5,6 +5,7 @@
 require_once __DIR__ . '/../../config/bootstrap.php';
 
 use StudentAttendance\Utils\AdminAuth;
+use StudentAttendance\Utils\UserManagement;
 
 if (AdminAuth::check()) {
     header('Location: /pages/admin/dashboard.php');
@@ -21,21 +22,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($password)) {
         $error = 'Please enter both email and password';
     } else {
-        // For demo purposes, we'll use a simple admin account
-        // In production, use a separate admin table or proper auth service
-        $adminEmail = 'admin@school.edu';
-        $adminPassword = 'admin123'; // In production: password_hash()
-        
-        if ($email === $adminEmail && $password === $adminPassword) {
-            $_SESSION['admin_id'] = 'admin_001';
-            $_SESSION['admin_email'] = $email;
-            $_SESSION['admin_logged_in'] = true;
-            
+        $loginError = '';
+
+        if (UserManagement::attemptAdminLogin($email, $password, $loginError)) {
             header('Location: /pages/admin/dashboard.php');
             exit;
-        } else {
-            $error = 'Invalid email or password';
         }
+
+        $error = $loginError !== '' ? $loginError : 'Invalid email or password';
     }
 }
 

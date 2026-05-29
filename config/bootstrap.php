@@ -58,13 +58,14 @@ if (PHP_SAPI !== 'cli') {
         $rememberedStudentId = (int) $_COOKIE['student_id'];
         if ($rememberedStudentId > 0) {
             try {
+                \StudentAttendance\Utils\UserManagement::ensureSchema();
                 $student = Utility::safeQuery(
-                    'SELECT id, name FROM students WHERE id = ? LIMIT 1',
+                    'SELECT id, name, COALESCE(is_active, 1) AS is_active FROM students WHERE id = ? LIMIT 1',
                     [$rememberedStudentId],
                     'SELECT',
                     true
                 );
-                if ($student) {
+                if ($student && !empty($student['is_active'])) {
                     $_SESSION['student_id'] = (int) $student['id'];
                     $_SESSION['student_name'] = $student['name'] ?? '';
                 } else {

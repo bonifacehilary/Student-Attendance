@@ -215,6 +215,8 @@ class TeacherAuth
 
     public static function attemptLogin(string $email, string $password, ?string &$error = null): bool
     {
+        UserManagement::ensureSchema();
+
         $email = strtolower(trim($email));
         $password = trim($password);
 
@@ -227,7 +229,7 @@ class TeacherAuth
 
         try {
             $teacher = Utility::safeQuery(
-                'SELECT id, name, email, password_hash, assigned_class FROM teachers WHERE LOWER(email) = ? LIMIT 1',
+                'SELECT id, name, email, password_hash, assigned_class, COALESCE(is_active, 1) AS is_active FROM teachers WHERE LOWER(email) = ? LIMIT 1',
                 [$email],
                 'SELECT',
                 true
@@ -254,7 +256,7 @@ class TeacherAuth
             self::ensureDefaultTeacher();
             try {
                 $teacher = Utility::safeQuery(
-                    'SELECT id, name, email, password_hash, assigned_class FROM teachers WHERE LOWER(email) = ? LIMIT 1',
+                    'SELECT id, name, email, password_hash, assigned_class, COALESCE(is_active, 1) AS is_active FROM teachers WHERE LOWER(email) = ? LIMIT 1',
                     [$email],
                     'SELECT',
                     true
@@ -266,6 +268,11 @@ class TeacherAuth
 
         if (!$teacher) {
             $error = 'No teacher account found for this email.';
+            return false;
+        }
+
+        if (empty($teacher['is_active'])) {
+            $error = 'This teacher account is deactivated. Contact administration.';
             return false;
         }
 
