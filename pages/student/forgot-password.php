@@ -184,7 +184,7 @@ if (!isset($_POST['action']) && isset($_SESSION['reset_token'])) {
                             type="text" 
                             id="identifier"
                             name="identifier"
-                            placeholder="alex@school.edu or STU2024001"
+                            placeholder="Email or admission number"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition"
                             required
                         />
@@ -218,7 +218,6 @@ if (!isset($_POST['action']) && isset($_SESSION['reset_token'])) {
                             id="reset_token"
                             name="reset_token"
                             placeholder="Paste your reset code here"
-                            value="<?php echo isset($_SESSION['reset_token']) ? substr($_SESSION['reset_token'], 0, 16) . '...' : ''; ?>"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition font-mono text-sm"
                             required
                         />
@@ -304,14 +303,6 @@ if (!isset($_POST['action']) && isset($_SESSION['reset_token'])) {
             </div>
             <?php endif; ?>
         </div>
-
-        <!-- Info Card -->
-        <div class="mt-6 bg-white/10 backdrop-blur-md rounded-lg p-4 text-white text-center">
-            <p class="text-sm">
-                <span class="material-symbols-outlined text-lg">info</span><br/>
-                Demo: Reset code auto-filled (check input field)
-            </p>
-        </div>
     </div>
 
     <script>
@@ -328,17 +319,6 @@ if (!isset($_POST['action']) && isset($_SESSION['reset_token'])) {
                 icon.textContent = 'visibility';
             }
         }
-
-        // Auto-fill reset code if available
-        window.addEventListener('load', function() {
-            const resetTokenField = document.getElementById('reset_token');
-            if (resetTokenField && resetTokenField.value.includes('...')) {
-                const storedToken = '<?php echo isset($_SESSION['reset_token']) ? $_SESSION['reset_token'] : ''; ?>';
-                if (storedToken) {
-                    resetTokenField.value = storedToken;
-                }
-            }
-        });
     </script>
 </body>
 </html>

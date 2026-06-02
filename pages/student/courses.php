@@ -6,6 +6,7 @@ require_once __DIR__ . '/../../config/bootstrap.php';
 
 use StudentAttendance\Utils\StudentAuth;
 use StudentAttendance\Utils\Timetable;
+use StudentAttendance\Utils\CourseMaterials;
 
 StudentAuth::require();
 $studentId = StudentAuth::studentId();
@@ -13,22 +14,27 @@ $student = StudentAuth::getStudent($studentId);
 $studentClass = trim((string) ($student['student_class'] ?? ''));
 Timetable::ensureSchema();
 $courses = $studentClass !== '' ? Timetable::courses($studentClass) : [];
+CourseMaterials::ensureSchema();
 
 if (isset($_GET['download'])) {
-    $materials = [
-        'chapter-1' => [
-            'filename' => 'chapter-1-introduction.txt',
-            'body' => "EduAttend course material\n\nChapter 1: Introduction\n\nAsk your teacher for the full PDF handout in class.",
-        ],
-    ];
-    $key = (string) $_GET['download'];
-    if (isset($materials[$key])) {
-        header('Content-Type: text/plain; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="' . $materials[$key]['filename'] . '"');
-        echo $materials[$key]['body'];
-        exit;
+    $materialId = (int) $_GET['download'];
+    $material = CourseMaterials::findForStudent($materialId, $studentClass);
+    if ($material) {
+        $path = CourseMaterials::uploadDir() . '/' . basename((string) $material['stored_filename']);
+        if (is_file($path)) {
+            $downloadName = preg_replace('/[^A-Za-z0-9._ -]/', '_', basename((string) $material['original_filename'])) ?: 'course-notes';
+            header('Content-Type: ' . ($material['mime_type'] ?: 'application/octet-stream'));
+            header('Content-Disposition: attachment; filename="' . $downloadName . '"');
+            header('Content-Length: ' . filesize($path));
+            readfile($path);
+            exit;
+        }
     }
+    http_response_code(404);
+    exit('Material not found.');
 }
+
+$materials = CourseMaterials::forStudentClass($studentClass);
 
 $pageTitle = 'Courses';
 $pageHeading = 'My Courses & Subjects';
@@ -67,32 +73,44 @@ require __DIR__ . '/../../components/student/layout-start.php';
         <?php endif; ?>
     </div>
 
-    <!-- Course Details Card -->
-    <div class="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-        <h3 class="font-bold text-slate-900 mb-4">Course Materials</h3>
-        <div class="space-y-3">
-            <a href="/pages/student/courses.php?download=chapter-1" class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-slate-300">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-slate-600">description</span>
-                    <div>
-                        <p class="text-sm font-medium text-slate-900">Chapter 1: Introduction</p>
-                        <p class="text-xs text-slate-500">PDF • 2.4 MB</p>
-                    </div>
-                </div>
-                <span class="text-emerald-700 text-sm font-semibold">Download</span>
-            </a>
-            <a href="/pages/student/help.php" class="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-slate-300">
-                <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-slate-600">video_library</span>
-                    <div>
-                        <p class="text-sm font-medium text-slate-900">Lesson Video: Basics</p>
-                        <p class="text-xs text-slate-500">MP4 • 45 min</p>
-                    </div>
-                </div>
-                <span class="text-emerald-700 text-sm font-semibold">Watch</span>
-            </a>
+    <section class="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <div>
+                <h3 class="font-bold text-slate-900">Course Materials</h3>
+                <p class="text-sm text-slate-500 mt-1">Download notes published by your teachers.</p>
+            </div>
+            <span class="material-symbols-outlined text-emerald-700">folder_open</span>
         </div>
-    </div>
+
+        <?php if (empty($materials)): ?>
+            <p class="text-sm text-slate-600">No notes have been published for your class yet.</p>
+        <?php else: ?>
+            <div class="space-y-3">
+                <?php foreach ($materials as $material): ?>
+                    <a href="/pages/student/courses.php?download=<?= (int) $material['id'] ?>"
+                       class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 hover:border-emerald-300 transition-colors">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="material-symbols-outlined text-slate-600">description</span>
+                            <div class="min-w-0">
+                                <p class="text-sm font-semibold text-slate-900 truncate"><?= htmlspecialchars($material['title']) ?></p>
+                                <p class="text-xs text-slate-500">
+                                    <?= htmlspecialchars($material['course_name']) ?>
+                                    <?php if (!empty($material['teacher_name'])): ?>
+                                        <span class="mx-1">/</span><?= htmlspecialchars($material['teacher_name']) ?>
+                                    <?php endif; ?>
+                                    <span class="mx-1">/</span><?= htmlspecialchars(CourseMaterials::formatBytes((int) $material['file_size'])) ?>
+                                </p>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center gap-1 text-emerald-700 text-sm font-semibold">
+                            <span class="material-symbols-outlined text-base">download</span>
+                            Download
+                        </span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </section>
 </div>
 
 <?php require __DIR__ . '/../../components/student/layout-end.php'; ?>

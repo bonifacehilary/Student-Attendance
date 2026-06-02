@@ -100,6 +100,11 @@ require __DIR__ . '/../../components/teacher/shell-start.php';
         <h2 class="text-lg font-bold text-slate-900 mt-3 group-hover:text-sky-700">Reports</h2>
         <p class="text-sm text-slate-600 mt-1">Attendance summary for your class.</p>
     </a>
+    <a href="/pages/teacher/materials.php" class="admin-card p-6 block hover:border-sky-400 transition group">
+        <span class="material-symbols-outlined text-3xl text-sky-600">folder_open</span>
+        <h2 class="text-lg font-bold text-slate-900 mt-3 group-hover:text-sky-700">Course materials</h2>
+        <p class="text-sm text-slate-600 mt-1">Publish notes for students to download.</p>
+    </a>
 </div>
 
 <div class="admin-card overflow-hidden">

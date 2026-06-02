@@ -112,13 +112,6 @@ require __DIR__ . '/../../components/ui/head.php';
                     <span class="material-symbols-outlined">login</span>
                     Sign In
                 </button>
-
-                <!-- Demo Credentials -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p class="text-sm font-bold text-blue-900 mb-2">Demo Credentials:</p>
-                    <p class="text-xs text-blue-700 mb-1"><strong>Email:</strong> admin@school.edu</p>
-                    <p class="text-xs text-blue-700"><strong>Password:</strong> admin123</p>
-                </div>
             </form>
 
             <!-- Footer -->

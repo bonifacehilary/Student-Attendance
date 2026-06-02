@@ -104,7 +104,7 @@ require __DIR__ . '/../../components/ui/head.php';
                     type="text" 
                     id="identifier" 
                     name="identifier" 
-                    placeholder="e.g. alex@school.edu or STU2024001" 
+                    placeholder="Email or admission number"
                     required 
                     value="<?php echo htmlspecialchars($_POST['identifier'] ?? ''); ?>"
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600"
@@ -138,7 +138,6 @@ require __DIR__ . '/../../components/ui/head.php';
             </button>
         </form>
         <div class="mt-6 pt-6 border-t border-gray-200 text-center text-sm text-gray-600">
-            <p class="mb-3">Test Credentials: alex@school.edu / password123</p>
             <a class="text-emerald-600 hover:underline" href="/pages/student/forgot-password.php">Forgot password?</a>
         </div>
     </section>

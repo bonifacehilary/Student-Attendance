@@ -67,10 +67,6 @@ $sidebarItems = [
 
     <!-- Sidebar Footer with Logout -->
     <div class="sticky bottom-0 border-t border-slate-200 bg-white px-3 py-4 space-y-2">
-        <a href="/pages/student/notifications.php" class="flex items-center gap-3 px-4 py-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-all duration-200 text-sm" title="Notifications">
-            <span class="material-symbols-outlined text-lg flex-shrink-0 text-slate-600">notifications</span>
-            <span>Notifications</span>
-        </a>
         <a href="/pages/student/logout.php" 
            class="flex items-center gap-3 px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-all duration-200 text-sm font-semibold"
            title="Logout">

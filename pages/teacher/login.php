@@ -78,13 +78,6 @@ require __DIR__ . '/../../components/ui/head.php';
                     <span class="material-symbols-outlined">login</span>
                     Sign in
                 </button>
-
-                <div class="bg-sky-50 border border-sky-200 rounded-lg p-4 text-sm">
-                    <p class="font-bold text-sky-900 mb-2">Demo credentials</p>
-                    <p class="text-sky-800"><strong>Email:</strong> teacher@school.edu</p>
-                    <p class="text-sky-800"><strong>Password:</strong> teacher123</p>
-                    <p class="text-sky-700 text-xs mt-2">Assigned class: Grade 10A</p>
-                </div>
             </form>
 
             <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 text-center text-sm text-gray-600 space-y-2">

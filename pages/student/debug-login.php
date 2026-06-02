@@ -59,37 +59,35 @@ try {
     $errors[] = 'List students error: ' . $e->getMessage();
 }
 
-// Test 5: Verify password for first student
+$firstStudent = null;
+
+// Test 5: Check password hashes exist without exposing any sample credential
 try {
     $firstStudent = $db->fetchAssociative(
         'SELECT id, email, admission_number, password_hash FROM students LIMIT 1'
     );
     if ($firstStudent) {
-        $testPassword = 'password123';
-        $verified = password_verify($testPassword, $firstStudent['password_hash']);
-        $success[] = 'Password verification for ' . $firstStudent['email'] . ': ' . ($verified ? 'PASS' : 'FAIL');
-        if (!$verified) {
-            $errors[] = 'Password hashes might be incorrect. Re-run: php scratch/setup_local.php';
+        if (!empty($firstStudent['password_hash'])) {
+            $success[] = 'Password hash present for first student: OK';
+        } else {
+            $errors[] = 'First student is missing a password hash. Re-run: php scratch/setup_local.php';
         }
     }
 } catch (\Throwable $e) {
     $errors[] = 'Password test error: ' . $e->getMessage();
 }
 
-// Test 6: Try the actual login query
+// Test 6: Try the actual login lookup shape with the first available student
 try {
-    $testEmail = 'alex@school.edu';
+    $firstIdentifier = $firstStudent['email'] ?? $firstStudent['admission_number'] ?? '';
     $student = $db->fetchAssociative(
         'SELECT id, email, admission_number, password_hash, name FROM students WHERE email = ? OR admission_number = ? LIMIT 1',
-        [$testEmail, 'STU2024001']
+        [$firstIdentifier, $firstIdentifier]
     );
     if ($student) {
-        $success[] = 'Login query for alex@school.edu: FOUND';
-        if (password_verify('password123', $student['password_hash'])) {
-            $success[] = 'Password verify for test user: PASS';
-        }
+        $success[] = 'Login query for first student identifier: FOUND';
     } else {
-        $errors[] = 'Login query returned no results for alex@school.edu';
+        $errors[] = 'Login query returned no results for first student identifier';
     }
 } catch (\Throwable $e) {
     $errors[] = 'Login query error: ' . $e->getMessage();
@@ -126,15 +124,6 @@ try {
     <div class="container">
         <h1>🔍 Login Debugging</h1>
         
-        <div class="info">
-            <strong>Test Credentials:</strong>
-            <ul>
-                <li>Email: alex@school.edu | Password: password123</li>
-                <li>Email: jordan@school.edu | Password: password123</li>
-                <li>Admission: STU2024001 | Password: password123</li>
-            </ul>
-        </div>
-
         <h2>Test Results:</h2>
         
         <?php if (!empty($errors)): ?>
@@ -155,20 +144,7 @@ try {
         <ul>
             <li><a href="/pages/student/login.php">Go to Login Page</a></li>
             <li><a href="/pages/student/splash.php">Go to Splash Page</a></li>
-            <?php if (empty($errors)): ?>
-                <li><a href="/pages/student/debug-login.php?test_login=1">Try Test Login</a></li>
-            <?php endif; ?>
         </ul>
-
-        <?php
-        // If test_login is passed, attempt to set session and redirect
-        if (!empty($_GET['test_login']) && empty($errors)) {
-            $_SESSION['student_id'] = 1;
-            $_SESSION['student_name'] = 'Test User';
-            header('Location: /pages/student/dashboard.php');
-            exit;
-        }
-        ?>
     </div>
 </body>
 </html>

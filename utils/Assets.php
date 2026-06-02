@@ -142,6 +142,7 @@ class Assets
             ['label' => 'My class', 'href' => '/pages/teacher/students.php', 'icon' => 'groups'],
             ['label' => 'Reports', 'href' => '/pages/teacher/reports.php', 'icon' => 'summarize'],
             ['label' => 'My timetable', 'href' => '/pages/teacher/timetable.php', 'icon' => 'calendar_month'],
+            ['label' => 'Course materials', 'href' => '/pages/teacher/materials.php', 'icon' => 'folder_open'],
             ['label' => 'QR sessions', 'href' => '/pages/teacher/qrs.php', 'icon' => 'qr_code_2'],
             ['label' => 'Create QR', 'href' => '/pages/teacher/create_qr.php', 'icon' => 'add_circle'],
         ];
