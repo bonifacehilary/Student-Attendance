@@ -15,8 +15,5 @@
             "StudentAttendance\\Controller\\": "controller/",
             "StudentAttendance\\Migrations\\": "src/Migrations/"
         }
-    },
-    "config": {
-        "cafile": "C:\\php\\cacert.pem"
     }
 }
